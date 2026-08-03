@@ -1,0 +1,4 @@
+interface:
+  display_name: "小说蒸馏器"
+  short_description: "Distill multiple novels into reusable original writing craft"
+  default_prompt: "Use $distill-novels to distill these novels by selected writing dimensions."
