@@ -84,6 +84,38 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(chapters[1]['start_line'], 3)
         self.assertEqual(text[chapters[1]['start_offset']:chapters[1]['end_offset']], '第二章 选择\n她留下了。\n')
 
+    def test_fullwidth_indented_chapters_preserve_locators(self):
+        text = '书籍说明\n\n　　第一章 海岸\n　　船到了。\n\n　　第二章 旧桥\n　　桥断了。\n'
+        chapters = sources.chapter_index(text)
+        self.assertEqual([c['title'] for c in chapters], ['章前内容', '第一章 海岸', '第二章 旧桥'])
+        self.assertEqual(chapters[1]['start_line'], 3)
+        self.assertEqual(text[chapters[2]['start_offset']:chapters[2]['end_offset']], '　　第二章 旧桥\n　　桥断了。\n')
+
+    def test_collection_heading_and_prologue_are_indexed(self):
+        text = '　　第一集 雾港\n\n　　序章 归船\n　　雾很浓。\n\n　　第一章 信使\n　　有人敲门。\n'
+        chapters = sources.chapter_index(text)
+        self.assertEqual([c['title'] for c in chapters], ['第一集 雾港', '序章 归船', '第一章 信使'])
+        self.assertEqual(chapters[1]['start_line'], 3)
+
+    def test_volume_prefixed_chapters_are_separate_sections(self):
+        text = '卷一 初来 第1章 车站\n甲。\n卷一 初来 第2章 火光\n乙。\n卷二 远行 第3章 山口\n丙。\n'
+        chapters = sources.chapter_index(text)
+        self.assertEqual(len(chapters), 3)
+        self.assertEqual(chapters[2]['title'], '卷二 远行 第3章 山口')
+        self.assertEqual(chapters[1]['start_line'], 3)
+
+    def test_body_mentions_of_volumes_are_not_headings(self):
+        text = '第一章 海岸\n　　第一卷的六张地图出现时，旧航路重新开放。\n　　卷一的结尾尚未写完。\n第二章 山口\n风来了。\n'
+        chapters = sources.chapter_index(text)
+        self.assertEqual([c['title'] for c in chapters], ['第一章 海岸', '第二章 山口'])
+        self.assertIn('六张地图', text[chapters[0]['start_offset']:chapters[0]['end_offset']])
+
+    def test_adjacent_chinese_chapter_titles_remain_supported(self):
+        text = '序章归船\n雾很浓。\n第一章海岸\n船到了。\n第二章旧桥\n桥断了。\n终章归来\n灯亮了。\n'
+        chapters = sources.chapter_index(text)
+        self.assertEqual([c['title'] for c in chapters], ['序章归船', '第一章海岸', '第二章旧桥', '终章归来'])
+        self.assertEqual([c['start_line'] for c in chapters], [1, 3, 5, 7])
+
     def test_legacy_manifest_keeps_alias_and_existing_work(self):
         self.output.mkdir()
         legacy = self.output / 'book-01-12345678.txt'

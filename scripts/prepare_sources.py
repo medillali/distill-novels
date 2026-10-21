@@ -19,7 +19,15 @@ from fictionlib.storage import commit, json_text, locked, new_id, read_json
 
 SUPPORTED = {".txt", ".md", ".markdown", ".rst", ".adoc", ".html", ".htm", ".rtf", ".epub", ".docx"}
 CHAPTER_RE = re.compile(
-    r"(?im)^[ \t]*(?:#{1,6}[ \t]*)?(?:chapter[ \t]+(?:\d+|[ivxlcdm]+)|第[零〇一二三四五六七八九十百千万两\d]+[章节回卷部篇]|序章|楔子|尾声|终章)[^\n]*"
+    # 中文校对本常用全角缩进，并可能在章号前附带卷名。
+    r"(?im)^[^\S\r\n]*(?:#{1,6}[^\S\r\n]*)?(?:"
+    r"chapter[^\S\r\n]+(?:\d+|[ivxlcdm]+)|"
+    r"第[零〇一二三四五六七八九十百千万两\d]+[章节回]|序章|楔子|尾声|终章|"
+    # 卷/部标题要求分隔符，避免把“第一卷的……”等正文当成标题。
+    # 普通章号保留既有的无空格标题支持，例如“第一章归来”。
+    r"(?:第[零〇一二三四五六七八九十百千万两\d]+[卷部篇集]|"
+    r"卷[零〇一二三四五六七八九十百千万两\d]+)(?=[^\S\r\n]|$|[:：、.．—-])"
+    r")[^\r\n]*"
 )
 
 
