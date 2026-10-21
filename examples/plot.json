@@ -1,0 +1,28 @@
+{
+  "title": "灯塔旧信 · 原创结构演示",
+  "coverage": [],
+  "nodes": [
+    {"id":"story","title":"灯塔旧信","kind":"story","parent_id":null,"claim_kind":"plan"},
+    {"id":"act1","title":"第一段 · 旧信","kind":"arc","parent_id":"story","claim_kind":"plan"},
+    {"id":"act2","title":"第二段 · 拒绝","kind":"arc","parent_id":"story","claim_kind":"plan"},
+    {"id":"act3","title":"第三段 · 退潮","kind":"arc","parent_id":"story","claim_kind":"plan"},
+    {"id":"letter","title":"信封的第二道折痕","kind":"scene","parent_id":"act1","narrative_order":1,"claim_kind":"plan","summary":"新邮戳与旧折痕矛盾，阿桥认出父亲的记号。"},
+    {"id":"promise","title":"等潮退才拆信","kind":"scene","parent_id":"act1","narrative_order":2,"claim_kind":"plan","summary":"罗岚坚持一个看似不合理的承诺。"},
+    {"id":"refusal","title":"拒绝解释，却给他灯油","kind":"scene","parent_id":"act2","narrative_order":3,"claim_kind":"plan","summary":"言语拒绝与实际帮助形成矛盾；人物关系继续推进。"},
+    {"id":"repair","title":"两人一起修电线","kind":"scene","parent_id":"act2","narrative_order":4,"claim_kind":"plan","summary":"阿桥选择合作，换来天亮后的见面承诺。"},
+    {"id":"reveal","title":"父亲活着，却不敢回家","kind":"scene","parent_id":"act3","narrative_order":5,"claim_kind":"plan","summary":"寄信人的身份与罗岚隐瞒的原因共同揭示。"},
+    {"id":"choice","title":"知道了路，暂时不走","kind":"scene","parent_id":"act3","narrative_order":6,"claim_kind":"plan","summary":"阿桥取得行动自主权；结尾回报是主动选择。"}
+  ],
+  "edges": [
+    {"id":"e1","from":"letter","to":"refusal","kind":"setup","label":"父亲可能活着","claim_kind":"plan"},
+    {"id":"e2","from":"refusal","to":"reveal","kind":"reveal","label":"隐瞒原因揭示","claim_kind":"plan"},
+    {"id":"e3","from":"promise","to":"reveal","kind":"payoff","label":"退潮承诺兑现","claim_kind":"plan"},
+    {"id":"e4","from":"repair","to":"choice","kind":"echo","label":"主动选择的成长","claim_kind":"plan"},
+    {"id":"e5","from":"letter","to":"reveal","kind":"payoff","label":"旧信与新邮戳","claim_kind":"plan"}
+  ],
+  "threads": [
+    {"id":"identity","title":"父亲的去向","kind":"hidden","status":"resolved","node_ids":["letter","refusal","reveal"],"edge_ids":["e1","e2","e5"]},
+    {"id":"trust","title":"守灯人的隐瞒","kind":"hidden","status":"resolved","node_ids":["promise","refusal","reveal"],"edge_ids":["e2","e3"]},
+    {"id":"agency","title":"阿桥的自主选择","kind":"main","status":"resolved","node_ids":["repair","choice"],"edge_ids":["e4"],"resolution_note":"从被动寻找答案，到主动决定是否回应父亲。"}
+  ]
+}
