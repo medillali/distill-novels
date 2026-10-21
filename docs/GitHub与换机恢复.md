@@ -2,9 +2,23 @@
 
 工具代码和私人创作资料使用独立仓库。小说原文不随资料库推送；源文件需另行保存。完整来源索引、研究卡、图、检查点和历史仍可从Git取回，无原文也能读取已完成的分析。
 
+- 工具：[medillali/distill-novels](https://github.com/medillali/distill-novels)，私有。
+- 个人资料：[medillali/writing-vault](https://github.com/medillali/writing-vault)，私有。
+- [远程验收记录](testing/2026-10-22-github-acceptance.md)：GitHub重新克隆、资料恢复与双平台自动测试。
+
 ## 换到新电脑
 
 登录有访问权限的GitHub账号，将两个仓库放在同一层目录，例如 `C:\Novel\distill-novels` 与 `C:\Novel\writing-vault`。使用Python 3.10或以上版本；工具核心只需标准库。
+
+在选定的短目录中运行：
+
+```text
+git clone https://github.com/medillali/distill-novels.git
+git clone https://github.com/medillali/writing-vault.git
+cd distill-novels
+```
+
+两个仓库都需要授权账号登录。根工作区的 `novel.cmd` 是本机便利入口，未包含在上述仓库中；换机可直接使用下列Python命令。
 
 从工具目录执行：
 
@@ -33,6 +47,8 @@ git -C ../writing-vault status
 git -C ../writing-vault diff --stat
 ```
 
+本机工具仍在 `codex/persistent-fiction-library` 分支，上游保留为 `origin`，个人仓库为 `personal`。工具提交后明确运行 `git push personal HEAD:main`；不要向上游推送私人改造。资料库使用 `main` 分支和 `origin`，提交后运行 `git -C ../writing-vault push origin main`。从上述个人仓库新克隆的工具则直接使用 `main` / `origin`。
+
 提交时明确选择资料文件；不要强制加入 `.gitignore` 排除的原书、缓存或机器配置。GitHub版本快照和ZIP备份互相补充，仍可运行：
 
 ```text
@@ -46,4 +62,4 @@ ZIP只写入库外的新文件，恢复到不存在的新目录。默认不含�
 
 工具仓库的GitHub Actions会在代码推送或PR时运行Windows、Linux两组标准库测试，也可手动触发。它只测试合成样本，不下载私人资料库。工作流基于GitHub官方 [checkout](https://github.com/actions/checkout) 与 [setup-python](https://github.com/actions/setup-python)，固定已核实的提交版本。
 
-GitHub保存不代表ChatGPT记忆或Space已经同步。双端仍使用带基线的工作包导出与修改回收；Space接入需要单独完成。实际远程仓库地址和验收结果见本机工作台及后续远程验收记录。
+GitHub保存不代表ChatGPT记忆或Space已经同步。双端仍使用带基线的工作包导出与修改回收；Space接入需要单独完成。本次本机GitHub CLI已验证两个私有仓库可读写；当前GitHub插件读取新私库返回404，尚未验证其权限。后续在ChatGPT直接读取仓库时，需要为所用连接开放这两个私有仓库的访问权限；文件式工作包不依赖该连接。

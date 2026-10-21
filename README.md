@@ -8,7 +8,7 @@
 
 ## 本地增强版：长期小说资料库
 
-本分支在上游 Skill 基础上增加持久存储和本地工具；上面的链接保留上游出处，不代表此分支已远程发布。
+本分支在上游 Skill 基础上增加持久存储和本地工具；上面的链接保留上游出处。本增强版保存于私有仓库 [medillali/distill-novels](https://github.com/medillali/distill-novels)，个人资料独立保存于 [medillali/writing-vault](https://github.com/medillali/writing-vault)。
 
 - **长期人物卡与剧情素材**：资料存入独立 `writing-vault`，保留来源、标签、收藏、人工笔记、历史版本；多个作品引用同一张卡的指定版本。
 - **主线树与暗线网络**：卷、篇章、场景构成结构树；伏笔、误导、揭示、回收使用独立关系线，可交叉、多对多，记录读者和人物的认知差异。
@@ -23,7 +23,7 @@ python scripts/library.py --vault ../writing-vault init
 python scripts/library.py --vault ../writing-vault status
 ```
 
-打开 `work/demo/views/index.html` 体验离线剧情图。演示输出要求空目录，重复演示可改用 `work/demo-2`。真实资料库与示例分开保存。GitHub / Space 实际接入按用户选择留待后续；当前支持文件交接和本地同步基线登记，不会自动写入 ChatGPT 记忆。
+打开 `work/demo/views/index.html` 体验离线剧情图。演示输出要求空目录，重复演示可改用 `work/demo-2`。真实资料库与示例分开保存。GitHub私有保存已通过远程克隆和恢复验证，见 [GitHub与换机恢复](docs/GitHub与换机恢复.md)。Space仍待后续；当前支持文件交接和本地同步基线登记，不会自动写入 ChatGPT 记忆。
 
 ## 为什么使用 Distill Novels？
 
@@ -78,7 +78,7 @@ python scripts/library.py --vault ../writing-vault status
 
 在当前项目中，让 Codex 读取本仓库的 `SKILL.md` 即可按流程工作。无需先修改全局技能目录。本地工作区的 `AGENTS.md` 已指向工具和私人库。
 
-如果以后希望在所有项目中通过 `$distill-novels` 调用，可将本增强版目录安装到宿主技能目录，再按宿主方式重新加载。不要用上游主分支覆盖尚未发布的本地增强版。工具代码与 `writing-vault` 始终分开。
+如果以后希望在所有项目中通过 `$distill-novels` 调用，可将本增强版目录安装到宿主技能目录，再按宿主方式重新加载。不要用上游主分支覆盖个人仓库中的增强版。工具代码与 `writing-vault` 始终分开。
 
 ## 本地预处理
 
