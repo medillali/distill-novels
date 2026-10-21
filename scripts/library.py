@@ -86,7 +86,7 @@ def execute(args):
     if command in {'projects', 'space-list'}:
         pattern = 'books/*/project.json' if command == 'projects' else 'exchanges/space/*.json'
         with locked(vault.root):
-            return [read_json(path) for path in sorted(vault.root.glob(pattern))]
+            return [record for _, record in vault._records(pattern)]
     if command == 'sources-import':
         return vault.import_sources(read_json(args.file))
     if command == 'asset-put':

@@ -30,12 +30,14 @@ def export_bundle(vault, destination, asset_ids=None, project_id=None, max_chars
         current = vault._assets()
         if asset_ids is not None:
             chosen = [vault._get_asset(aid) for aid in asset_ids]
-        elif project:
-            chosen = [vault._get_asset(r['asset_id'], r['revision']) for r in project['assets']]
-            chosen += [a for a in current if a.get('project_id') == project_id]
         else:
-            chosen = current
-        graphs = [g for g in all_graphs(vault) if not project_id or g['owner'] == {'kind': 'project', 'id': project_id}]
+            chosen = [] if project else current
+        if project:
+            chosen += [vault._get_asset(r['asset_id'], r['revision']) for r in project['assets']]
+            chosen += [a for a in current if a.get('project_id') == project_id]
+        # 单独导出卡片不隐式分享任何作品的剧情图。
+        graphs = [] if asset_ids is not None and not project_id else [
+            g for g in all_graphs(vault) if not project_id or g['owner'] == {'kind': 'project', 'id': project_id}]
         selected = {(a['asset_id'], a['revision']): a for a in chosen}
         for graph in graphs:
             for node in graph['nodes']:
@@ -52,16 +54,22 @@ def export_bundle(vault, destination, asset_ids=None, project_id=None, max_chars
                     selected[key] = vault._get_asset(*key)
                     queue.append(selected[key])
         assets = list(selected.values())
+        editable = {}
+        for asset in assets:
+            # 显式选择/项目固定版本优先；同对象其他版本仅供依赖阅读。
+            editable.setdefault(asset['asset_id'], asset)
         source_ids = {e['source_id'] for a in assets for e in a['evidence']}
         source_ids |= {c['source_id'] for g in graphs for c in g.get('coverage', [])}
         for g in graphs:
             source_ids |= {e['source_id'] for n in g['nodes'] + g['edges'] for e in n.get('evidence', [])}
         bundle = {'schema_version': 1, 'vault_id': vault._read('vault.json')['vault_id'], 'bundle_id': new_id('bundle'),
                   'created_at': now(), 'assets': assets, 'graphs': graphs, 'sources': [vault._source(s) for s in sorted(source_ids)],
+                  'editable_assets': [{'asset_id': a['asset_id'], 'revision': a['revision']} for a in editable.values()],
                   'project': project, 'omitted_asset_ids': [a['asset_id'] for a in current if a['asset_id'] not in {s['asset_id'] for s in assets}]}
         context = ['# 小说创作工作包', '', f"资料库：{bundle['vault_id']}\n工作包：{bundle['bundle_id']}", '',
                    '完整卡片和图数据见 bundle.json。不要把参考研究卡直接当作原创作品事实。',
                    '修改通过 changes.json 回收；保留基线编号与哈希。content 的 patch 值是完整内容对象。', '']
+        context.append('每张卡片仅 editable_assets 指定的版本可作为修改基线；其余历史版本为只读依赖。')
         omitted = []
         for asset in assets:
             block = f"## {asset['title']}\n\nID: {asset['asset_id']} · v{asset['revision']} · {asset['scope']}\n\n{asset['content']['summary']}\n\n用户笔记：{asset['user_notes']}\n"
@@ -73,7 +81,7 @@ def export_bundle(vault, destination, asset_ids=None, project_id=None, max_chars
         context += ['', '## 上下文范围', '', '未展开卡片（仍在 bundle.json）：' + (', '.join(omitted) or '无'),
                     '未选择进工作包的资产：' + (', '.join(bundle['omitted_asset_ids']) or '无'), '']
         template = {'schema_version': 1, 'vault_id': bundle['vault_id'], 'bundle_id': bundle['bundle_id'], 'changes': [], 'new_assets': []}
-        for kind, records, key in [('asset', assets, 'asset_id'), ('graph', graphs, 'graph_id')]:
+        for kind, records, key in [('asset', editable.values(), 'asset_id'), ('graph', graphs, 'graph_id')]:
             for record in records:
                 template['changes'].append({'kind': kind, 'id': record[key], 'base_revision': record['revision'], 'base_hash': digest(record), 'patch': {}})
         files = {'bundle.json': json_text(bundle), 'context.md': '\n'.join(context), 'changes-template.json': json_text(template)}
@@ -117,7 +125,8 @@ def import_changes(vault, data, apply=False):
         if safe_path(vault.root, receipt_path).exists():
             return {'status': 'already-applied', 'package_hash': package_hash}
         base_bundle = vault._read(f"exchanges/outbox/{data['bundle_id']}.json")
-        bases = {('asset', a['asset_id'], a['revision']): a for a in base_bundle['assets']}
+        editable = {(a['asset_id'], a['revision']) for a in base_bundle.get('editable_assets', base_bundle['assets'])}
+        bases = {('asset', a['asset_id'], a['revision']): a for a in base_bundle['assets'] if (a['asset_id'], a['revision']) in editable}
         bases.update({('graph', g['graph_id'], g['revision']): g for g in base_bundle['graphs']})
         graphs = {g['graph_id']: g for g in all_graphs(vault)}
         writes, conflicts, changed, seen = {}, [], [], set()
@@ -210,6 +219,7 @@ def backup(vault, zip_path):
         raise ValueError('备份必须写入资料库外的新文件')
     zip_path.parent.mkdir(parents=True, exist_ok=True)
     with locked(vault.root):
+        vault._validate_locked()
         files = {}
         for path in sorted(vault.root.rglob('*')):
             name = path.relative_to(vault.root).as_posix()

@@ -20,8 +20,8 @@ def graph_path(owner_kind, owner_id):
 
 
 def all_graphs(vault):
-    return [read_json(p) for pattern in ('books/*/outline/plot-graph.json', 'library/sources/*/plot-graph.json')
-            for p in sorted(vault.root.glob(pattern))]
+    return [record for pattern in ('books/*/outline/plot-graph.json', 'library/sources/*/plot-graph.json')
+            for _, record in vault._records(pattern)]
 
 
 def validate_graph(graph, vault=None):

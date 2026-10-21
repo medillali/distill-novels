@@ -1,8 +1,11 @@
 import copy
+import json
+from html.parser import HTMLParser
 from xml.etree import ElementTree as ET
 
 from support import VaultCase
 from fictionlib.graph import save_graph, validate_graph, render_graph
+from fictionlib.render import positions
 
 
 def graph_sample():
@@ -100,3 +103,45 @@ class GraphTests(VaultCase):
         self.assertIn('plot-network.svg', result['files'])
         svg = ET.parse(self.root / 'view' / 'plot-tree.svg')
         self.assertIn('<script>alert(1)</script>', ''.join(svg.getroot().itertext()))
+
+    def test_template_tokens_in_labels_cannot_create_html_attributes(self):
+        data = graph_sample()
+        data['nodes'][0]['title'] = '@@DATA@@'
+        data['nodes'][1]['title'] = ' onmouseover=alert(1) '
+        render_graph(data, self.root / 'tokens')
+        class Inspector(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.handlers = []
+            def handle_starttag(self, tag, attrs):
+                self.handlers.extend((tag, name) for name, _ in attrs if name.lower().startswith('on'))
+        inspector = Inspector()
+        inspector.feed((self.root / 'tokens' / 'index.html').read_text(encoding='utf-8'))
+        self.assertEqual(inspector.handlers, [])
+
+    def test_validate_rejects_graph_owner_mismatch_and_invalid_history(self):
+        original = save_graph(self.vault, 'project', self.project['project_id'], graph_sample())
+        path = self.vault.root / 'books' / self.project['project_id'] / 'outline' / 'plot-graph.json'
+        other = self.vault.create_project('其他作品')
+        mismatched = copy.deepcopy(original)
+        mismatched['owner']['id'] = other['project_id']
+        path.write_text(json.dumps(mismatched), encoding='utf-8')
+        with self.assertRaises(ValueError):
+            self.vault.validate()
+        path.write_text(json.dumps(original), encoding='utf-8')
+        modified = graph_sample()
+        modified['title'] = '第二版'
+        save_graph(self.vault, 'project', self.project['project_id'], modified, base_revision=1)
+        original['edges'][0]['to'] = 'missing'
+        history = self.vault.root / 'history' / 'graphs' / original['graph_id'] / '1.json'
+        history.write_text(json.dumps(original), encoding='utf-8')
+        with self.assertRaises(ValueError):
+            self.vault.validate()
+
+    def test_network_nodes_do_not_overlap(self):
+        data = graph_sample()
+        pos, _, _ = positions(data, network=True)
+        points = list(pos.items())
+        for i, (left_id, (lx, ly)) in enumerate(points):
+            for right_id, (rx, ry) in points[i + 1:]:
+                self.assertTrue(abs(lx - rx) >= 208 or abs(ly - ry) >= 64, f'{left_id} overlaps {right_id}')

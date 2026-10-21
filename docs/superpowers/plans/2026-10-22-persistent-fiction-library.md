@@ -37,55 +37,55 @@
 
 接口：`prepare(inputs, output, source_id=None) -> dict`；`extract_epub(path) -> str`；结果 sources 含稳定 source_id、aliases、revision、revisions、chapters。
 
-- [ ] 先写 `tests/test_sources.py`，覆盖重排/追加/重复导入、指定修订、旧 manifest、章节偏移、UTF-16 BOM、EPUB spine 与缺失成员。
-- [ ] RED：`python -m unittest discover -s tests -p test_sources.py -v`。
-- [ ] 实现内容 SHA-256、登记型 ID、追加 manifest 与版本文本；EPUB 使用 container→OPF→spine 定位。
-- [ ] GREEN：执行同一命令，旧来源必须满足 `before['source_id'] == after['source_id']`，旧修订可回读。
-- [ ] 提交来源修复和测试，记录结果。
+- [x] 先写 `tests/test_sources.py`，覆盖重排/追加/重复导入、指定修订、旧 manifest、章节偏移、UTF-16 BOM、EPUB spine 与缺失成员。
+- [x] RED：`python -m unittest discover -s tests -p test_sources.py -v`。
+- [x] 实现内容 SHA-256、登记型 ID、追加 manifest 与版本文本；EPUB 使用 container→OPF→spine 定位。
+- [x] GREEN：执行同一命令，旧来源必须满足 `before['source_id'] == after['source_id']`，旧修订可回读。
+- [x] 提交来源修复和测试，记录结果。
 
 ### Task 2：持久资料库
 
 接口：`Vault(path)`；`Vault.init(path)`；`import_sources(manifest)`；`put_asset(data, base_revision=None, generated=False)`；`get_asset(id, revision=None)`；`search(...)`；`create_project(title)`；`use_asset(project_id, asset_id)`；`record_usage(...)`；`checkpoint(...)`。
 
-- [ ] 先写 `tests/test_vault.py`，覆盖重复素材、同名不同书、证据校验、人工笔记、并发旧版本、跨项目采用、归档项目后资产仍在、事务中断恢复。
-- [ ] RED：`python -m unittest discover -s tests -p test_vault.py -v`。
-- [ ] 实现锁、日志回滚、原子文件替换；资产写入时复制旧版本到 history，保护用户字段。
-- [ ] 检索按关键词、类型、标签、收藏、来源和项目组合筛选；使用记录固定资产版本，工作检查点固定来源修订。
-- [ ] GREEN：运行测试，验证 `get_asset(id, 1)` 保留旧内容，项目 A/B 的采用独立。
-- [ ] 提交资产基础与测试。
+- [x] 先写 `tests/test_vault.py`，覆盖重复素材、同名不同书、证据校验、人工笔记、并发旧版本、跨项目采用、归档项目后资产仍在、事务中断恢复。
+- [x] RED：`python -m unittest discover -s tests -p test_vault.py -v`。
+- [x] 实现锁、日志回滚、原子文件替换；资产写入时复制旧版本到 history，保护用户字段。
+- [x] 检索按关键词、类型、标签、收藏、来源和项目组合筛选；使用记录固定资产版本，工作检查点固定来源修订。
+- [x] GREEN：运行测试，验证 `get_asset(id, 1)` 保留旧内容，项目 A/B 的采用独立。
+- [x] 提交资产基础与测试。
 
 ### Task 3：剧情图与离线视图
 
 接口：`validate_graph(graph, vault=None)`；`save_graph(vault, owner_kind, owner_id, data, base_revision=None)`；`render_graph(graph, destination)`。
 
-- [ ] 先写 `tests/test_graph.py`，覆盖父子环、悬空边、叙述时间、暗线多对多、引用错误、缺失证据、特殊字符。
-- [ ] RED：`python -m unittest discover -s tests -p test_graph.py -v`。
-- [ ] 实现结构父子与关系边分离，验证 threads 和 coverage；版本保存沿用事务层。
-- [ ] 实现树/关系网、暗线筛选、节点详情、章节段筛选、缩放；输出独立 HTML、SVG 和 Markdown，无外部 CDN。
-- [ ] GREEN：运行测试并实际打开原创示例，确认筛选和节点详情可用。
-- [ ] 提交图模块与测试。
+- [x] 先写 `tests/test_graph.py`，覆盖父子环、悬空边、叙述时间、暗线多对多、引用错误、缺失证据、特殊字符。
+- [x] RED：`python -m unittest discover -s tests -p test_graph.py -v`。
+- [x] 实现结构父子与关系边分离，验证 threads 和 coverage；版本保存沿用事务层。
+- [x] 实现树/关系网、暗线筛选、节点详情、章节段筛选、缩放；输出独立 HTML、SVG 和 Markdown，无外部 CDN。
+- [x] GREEN：运行测试并实际打开原创示例，确认筛选和节点详情可用。
+- [x] 提交图模块与测试。
 
 ### Task 4：双端交换、备份与恢复
 
 接口：`export_bundle(vault, destination, asset_ids=None, project_id=None)`；`import_changes(vault, changes, apply=False)`；`backup(vault, zip_path)`；`restore(zip_path, destination)`。
 
-- [ ] 先写 `tests/test_exchange.py`，覆盖往返、同字段冲突、不同字段合并、过期哈希、重复回收、新卡片、损坏备份、路径穿越和空目录恢复。
-- [ ] RED：`python -m unittest discover -s tests -p test_exchange.py -v`。
-- [ ] 输出有版本/哈希的 bundle/context/changes 模板；回收比较共同版本、本地、远端，冲突时整包不应用。
-- [ ] 用清单与 SHA-256 校验备份；恢复仅接受新目录，完成验证后再发布恢复结果。
-- [ ] 记录 Space 页面 ID、同步基线、页面哈希和变更游标；宿主使用真实 Pages 工具读写，不在 Python 中伪造平台接口。
-- [ ] GREEN：运行测试，要求恢复后主档哈希一致，并验证原始小说未进入默认备份。
-- [ ] 提交交换模块与测试。
+- [x] 先写 `tests/test_exchange.py`，覆盖往返、同字段冲突、不同字段合并、过期哈希、重复回收、新卡片、损坏备份、路径穿越和空目录恢复。
+- [x] RED：`python -m unittest discover -s tests -p test_exchange.py -v`。
+- [x] 输出有版本/哈希的 bundle/context/changes 模板；回收比较共同版本、本地、远端，冲突时整包不应用。
+- [x] 用清单与 SHA-256 校验备份；恢复仅接受新目录，完成验证后再发布恢复结果。
+- [x] 记录 Space 页面 ID、同步基线、页面哈希和变更游标；宿主使用真实 Pages 工具读写，不在 Python 中伪造平台接口。
+- [x] GREEN：运行测试，要求恢复后主档哈希一致，并验证原始小说未进入默认备份。
+- [x] 提交交换模块与测试。
 
 ### Task 5：CLI、Skill、示例与验收
 
-- [ ] 先写 `tests/test_cli.py`：从空目录初始化→来源登记→素材保存→项目采用→图渲染→导出→回收→备份→恢复。
-- [ ] RED：`python -m unittest discover -s tests -p test_cli.py -v`。
-- [ ] CLI 用 argparse 子命令映射前述接口，错误写 stderr 并返回非零；dry-run 明确报告未应用。
-- [ ] 更新 SKILL 的入口路由与渐进式参考，增加真实可运行的原创样例和中英文说明。
-- [ ] GREEN：`python -m unittest discover -s tests -v`，运行 Skill 验证器与 `git diff --check`。
-- [ ] 初始化用户空资料库，不填入虚构的蒸馏成果；演示资料留在独立演示目录。
-- [ ] 独立代码审查与必要修复；记录设计/本地验证/GitHub/Space/真实小说质量的分层状态。
+- [x] 先写 `tests/test_cli.py`：从空目录初始化→来源登记→素材保存→项目采用→图渲染→导出→回收→备份→恢复。
+- [x] RED：`python -m unittest discover -s tests -p test_cli.py -v`。
+- [x] CLI 用 argparse 子命令映射前述接口，错误写 stderr 并返回非零；dry-run 明确报告未应用。
+- [x] 更新 SKILL 的入口路由与渐进式参考，增加真实可运行的原创样例和中英文说明。
+- [x] GREEN：`python -m unittest discover -s tests -v`，运行 Skill 验证器与 `git diff --check`。
+- [x] 初始化用户空资料库，不填入虚构的蒸馏成果；演示资料留在独立演示目录。
+- [x] 独立代码审查与必要修复；记录设计/本地验证/GitHub/Space/真实小说质量的分层状态。
 
 ## Review Focus
 

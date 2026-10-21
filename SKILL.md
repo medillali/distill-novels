@@ -1,11 +1,23 @@
 ---
 name: distill-novels
-description: Distill one or many novels into a reusable writing knowledge skill, selectively extracting worldbuilding architecture, character systems, plot structure, narrative craft, prose style, dialogue, pacing, themes, or continuity constraints. Use when Codex needs to analyze TXT, Markdown, EPUB, PDF, DOCX, HTML, or RTF fiction; compare techniques across multiple books; build or update a private story-craft library; or use distilled principles to outline, draft, revise, polish, and consistency-check the user's own fiction without reproducing source prose.
+description: Analyze fiction with chapter evidence, preserve reusable character and scene cards across writing projects, map plot trees and hidden threads, and exchange versioned writing context with ChatGPT. Use for novel distillation, private fiction libraries, original outlining, revision, and continuity checks.
 ---
 
 # Distill Novels
 
 Turn fiction sources into a private, evidence-grounded writing skill. Extract reusable mechanisms and constraints, not a compressed copy of the novels.
+
+## Persistent library route
+
+For long-term storage, cross-project reuse, plot graphs, or resuming an earlier analysis, read [references/library-workflow.md](references/library-workflow.md). Use the existing personal vault outside this tool repository; locate it from workspace instructions or the user's chosen path. Do not create a new vault per novel or per conversation.
+
+For ChatGPT handoff, returned changes, backups, or a requested Space connection, read [references/chatgpt-handoff.md](references/chatgpt-handoff.md). Files are the authoritative store. Local synchronization metadata is not evidence of a successful remote write.
+
+The scripts handle extraction, storage and validation. The host model must read bounded source chapters and perform the literary analysis. Do not invent observations from filenames, snippets, or an unread full book. Continue from saved checkpoints and report the chapters actually covered.
+
+Keep three layers separate: `source-analysis` (observations about a source), `reusable-pattern` (abstract craft), and `original-project` (the user's project canon). Project references pin card revisions; upgrading a reference is an explicit operation. Use `--generated` for repeated distillation to preserve user notes, favorites and review choices.
+
+Cards and graphs live in versioned JSON. Generate Markdown and offline HTML views for reading. A selected scene stores a paraphrased causal mechanism, source locator, applicability and failure conditions; it is not a long excerpt archive. Build a structural parent tree plus independent relation edges and threads for concealed motives, misdirection, echoes and payoffs.
 
 ## Route the request
 
@@ -15,7 +27,7 @@ Identify:
 - `DIMENSIONS`: any of `worldbuilding`, `characters`, `plot`, `style`, `narrative`, `dialogue`, `pacing`, `themes`, `continuity`, or `all`.
 - `MODE`: `analyze-only`, `create`, `update`, or `compare`.
 - `DEPTH`: `compact`, `standard`, or `deep`; default to `standard`.
-- `DESTINATION`: output skill folder.
+- `DESTINATION`: existing vault for durable work, or output skill folder for a standalone analysis artifact.
 
 Infer these from the request when clear. Ask only for a choice that materially changes the result. If dimensions are omitted, show the dimension menu from [references/dimensions.md](references/dimensions.md) and recommend `all` for a general-purpose writing assistant.
 
@@ -34,7 +46,7 @@ Treat multiple sources as separate works unless the user explicitly says they ar
    - contrasting implementations;
    - source-specific signatures;
    - transferable principles for the user's work.
-8. Generate files according to [references/output-schema.md](references/output-schema.md). Omit unselected dimension files.
+8. For durable work, persist cards, graphs and checkpoints through `scripts/library.py` following the library reference. For standalone reports, generate files according to [references/output-schema.md](references/output-schema.md). Omit unselected dimension files.
 9. Run contradiction, provenance, and leakage checks from [references/safety-quality.md](references/safety-quality.md).
 10. In `update` mode, preserve source IDs and existing user-authored notes; append or revise only affected indexes and dimension files.
 
@@ -61,4 +73,4 @@ When drafting, offer original alternatives rather than transferring distinctive 
 
 ## Completion report
 
-Report source count, selected dimensions, warnings, generated or updated files, and example invocations. Explicitly flag weak chapter detection, uncertain metadata, extraction loss, or dimensions with insufficient evidence.
+Report source count, covered chapters, selected dimensions, warnings, saved card IDs/revisions, graph and reading-view paths, and example invocations. Separate local persistence, exported handoff files and actual cloud synchronization. Explicitly flag weak chapter detection, uncertain metadata, extraction loss, or dimensions with insufficient evidence.

@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import zipfile
 
@@ -136,3 +137,51 @@ class ExchangeTests(VaultCase):
         self.assertEqual(binding['cursor'], 8)
         with self.assertRaises(ValueError):
             record_space_sync(self.vault, {**binding, 'base_hash': '0' * 64})
+
+    def test_card_only_export_excludes_unrelated_project_graphs(self):
+        project = self.vault.create_project('不应分享的作品')
+        secret = self.vault.put_asset(self.card(title='另一个项目的秘密人物'))
+        graph = graph_sample()
+        graph['nodes'][3]['characters'] = [secret['asset_id']]
+        save_graph(self.vault, 'project', project['project_id'], graph)
+        bundle = export_bundle(self.vault, self.root / 'selected', asset_ids=[self.asset['asset_id']])
+        self.assertEqual(bundle['graphs'], [])
+        self.assertEqual([a['asset_id'] for a in bundle['assets']], [self.asset['asset_id']])
+
+    def test_current_and_historical_dependency_have_one_editable_baseline(self):
+        self.vault.put_asset({'asset_id': self.asset['asset_id'], 'title': '第二版'}, base_revision=1)
+        self.vault.put_asset(self.card(asset_type='pattern', scope='reusable-pattern', title='机制',
+                                     derived_from=[{'asset_id': self.asset['asset_id'], 'revision': 1}]))
+        target = self.root / 'versions'
+        bundle = export_bundle(self.vault, target)
+        self.assertEqual(sorted(a['revision'] for a in bundle['assets'] if a['asset_id'] == self.asset['asset_id']), [1, 2])
+        template = read_json(target / 'changes-template.json')
+        edits = [c for c in template['changes'] if c['id'] == self.asset['asset_id']]
+        self.assertEqual(len(edits), 1)
+        self.assertEqual(edits[0]['base_revision'], 2)
+        self.assertEqual(import_changes(self.vault, template, apply=True)['status'], 'applied')
+        template['changes'] = [{'kind': 'asset', 'id': self.asset['asset_id'], 'base_revision': 1,
+                                'base_hash': digest(self.asset), 'patch': {'title': '改只读历史'}}]
+        with self.assertRaises(ValueError):
+            import_changes(self.vault, template, apply=True)
+
+    def test_restore_rejects_graph_corruption_even_with_matching_archive_hash(self):
+        project = self.vault.create_project('项目')
+        graph = save_graph(self.vault, 'project', project['project_id'], graph_sample())
+        valid_archive = self.root / 'valid-graph.zip'
+        backup(self.vault, valid_archive)
+        graph_path = f"books/{project['project_id']}/outline/plot-graph.json"
+        graph['edges'][0]['to'] = 'missing'
+        with zipfile.ZipFile(valid_archive) as z:
+            contents = {name: z.read(name) for name in z.namelist()}
+        contents[graph_path] = json.dumps(graph).encode('utf-8')
+        manifest = json.loads(contents['MANIFEST.json'])
+        manifest['files'][graph_path] = hashlib.sha256(contents[graph_path]).hexdigest()
+        contents['MANIFEST.json'] = json.dumps(manifest).encode('utf-8')
+        broken = self.root / 'corrupt-graph.zip'
+        with zipfile.ZipFile(broken, 'w') as z:
+            for name, content in contents.items():
+                z.writestr(name, content)
+        with self.assertRaises(ValueError):
+            restore(broken, self.root / 'bad-restore')
+        self.assertFalse((self.root / 'bad-restore').exists())

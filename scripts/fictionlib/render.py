@@ -3,6 +3,7 @@
 import html
 import json
 import math
+import re
 from pathlib import Path
 
 from .storage import atomic_write
@@ -14,13 +15,11 @@ def positions(graph, network=False):
     nodes = graph['nodes']
     lookup = {n['id']: n for n in nodes}
     if network:
-        leaves = [n for n in nodes if n['kind'] in {'scene', 'event'}]
-        radius = max(260, len(leaves) * 42)
+        # 全部节点使用独立环形位置，避免分段节点叠在场景节点之上。
+        radius = max(260, len(nodes) * 42)
         center = radius + 220
-        pos = {n['id']: (center + radius * math.cos(2 * math.pi * i / max(1, len(leaves))),
-                         center + radius * math.sin(2 * math.pi * i / max(1, len(leaves)))) for i, n in enumerate(leaves)}
-        for i, node in enumerate(n for n in nodes if n not in leaves):
-            pos[node['id']] = (center, 90 + i * 90)
+        pos = {n['id']: (center + radius * math.cos(2 * math.pi * i / len(nodes)),
+                         center + radius * math.sin(2 * math.pi * i / len(nodes))) for i, n in enumerate(nodes)}
         return pos, center * 2, center * 2
     levels = {}
     for node in nodes:
@@ -31,7 +30,7 @@ def positions(graph, network=False):
         levels.setdefault(depth, []).append(node)
     width = max(920, max(len(v) for v in levels.values()) * 240 + 60)
     pos = {}
-    for depth, group in levels.items():
+    for depth, group in sorted(levels.items()):
         # 按父节点的横坐标排列，保证同一分段的节点相邻。
         group.sort(key=lambda n: (pos.get(n.get('parent_id'), (0, 0))[0], n.get('narrative_order', 0)))
         for i, node in enumerate(group):
@@ -91,7 +90,9 @@ def render(graph, destination):
     tree, network = svg(graph), svg(graph, True)
     template = Path(__file__).with_name('viewer.html').read_text(encoding='utf-8')
     payload = json.dumps(graph, ensure_ascii=False).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
-    document = template.replace('@@TITLE@@', html.escape(graph['title'])).replace('@@TREE@@', tree).replace('@@NETWORK@@', network).replace('@@DATA@@', payload)
+    replacements = {'TITLE': html.escape(graph['title']), 'TREE': tree, 'NETWORK': network, 'DATA': payload}
+    # 只扫描原模板一次，用户标签中的占位符永远作为文本保留。
+    document = re.sub(r'@@(TITLE|TREE|NETWORK|DATA)@@', lambda match: replacements[match[1]], template)
     files = {'index.html': document, 'plot-tree.svg': tree, 'plot-network.svg': network, 'plot.md': mermaid(graph)}
     for name, text in files.items():
         atomic_write(destination / name, text)

@@ -2,6 +2,8 @@
 
 Create only files justified by selected dimensions.
 
+This schema describes standalone analysis reports and generated writing skills. For a durable cross-project library, use [library-workflow.md](library-workflow.md): versioned cards and graphs are the primary JSON records, and Markdown reports are reading views. Do not overwrite the persistent library with a newly generated skill folder.
+
 ```text
 <generated-skill>/
 ├── SKILL.md

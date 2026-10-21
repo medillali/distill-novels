@@ -2,6 +2,7 @@
 """创建独立原创演示，不向真实资料库填入示例卡片。"""
 
 import argparse
+import copy
 import json
 from pathlib import Path
 import sys
@@ -41,6 +42,23 @@ def create_demo(output):
     graph['nodes'][5]['knowledge'] = [{'observer': 'reader', 'state': 'suspects', 'belief': '父亲可能活着'}, {'observer': courier['asset_id'], 'state': 'misbelieves', 'belief': '父亲已经死去'}]
     saved = save_graph(vault, 'project', project['project_id'], graph)
     render_graph(saved, output / 'views')
+    # 示例文本已完整阅读；另一张图展示有章节依据的来源分析，而非原创计划。
+    analysis = copy.deepcopy(graph)
+    analysis['title'] = '灯塔旧信 · 来源分析'
+    analysis['coverage'] = [{'source_id': source['source_id'], 'revision': source['revision'],
+                            'chapter_ids': ['ch-0001', 'ch-0002', 'ch-0003'], 'complete': True}]
+    chapter_by_node = {'story': 1, 'act1': 1, 'act2': 2, 'act3': 3, 'letter': 1, 'promise': 1,
+                       'refusal': 2, 'repair': 2, 'reveal': 3, 'choice': 3}
+    analysis['nodes'][6]['knowledge'] = analysis['nodes'][5].pop('knowledge')
+    for node in analysis['nodes']:
+        node['claim_kind'] = 'inference'
+        node['evidence'] = evidence(chapter_by_node[node['id']])
+    for edge in analysis['edges']:
+        edge['claim_kind'] = 'inference'
+        edge['evidence'] = [entry for chapter in sorted({chapter_by_node[edge['from']], chapter_by_node[edge['to']]})
+                            for entry in evidence(chapter)]
+    source_graph = save_graph(vault, 'source', source['source_id'], analysis)
+    render_graph(source_graph, output / 'source-view')
     vault.build_views()
     export_bundle(vault, output / 'chatgpt-pack', project_id=project['project_id'])
     backup(vault, output / 'demo-backup.zip')
@@ -48,7 +66,7 @@ def create_demo(output):
     summary = {**vault.validate(), 'project_id': project['project_id'], 'graph_id': saved['graph_id'],
                'directory': str(output), 'restore_verified': restored['valid']}
     (output / 'demo-result.json').write_text(json_text(summary), encoding='utf-8')
-    (output / 'START-HERE.md').write_text('# 原创演示\n\n此目录全部内容用于功能演示。\n\n- [剧情图](views/index.html)\n- [卡片目录](vault/library/views/index.md)\n- [ChatGPT 工作包](chatgpt-pack/context.md)\n- [验证结果](demo-result.json)\n\n真实个人资料库位于独立的 writing-vault，不包含这些示例卡片。\n', encoding='utf-8')
+    (output / 'START-HERE.md').write_text('# 原创演示\n\n此目录全部内容用于功能演示，来源短篇为本项目自创。\n\n- [来源分析图：带章节证据](source-view/index.html)\n- [原创规划图：演示计划与分析分开](views/index.html)\n- [卡片目录](vault/library/views/index.md)\n- [ChatGPT 工作包](chatgpt-pack/context.md)\n- [验证结果](demo-result.json)\n\n真实个人资料库位于独立的 writing-vault，不包含这些示例卡片。\n', encoding='utf-8')
     return summary
 
 

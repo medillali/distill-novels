@@ -63,7 +63,12 @@ class Vault:
             return self._read('vault.json')
 
     def _sources(self):
-        return [read_json(p) for p in sorted((self.root / 'library' / 'sources').glob('*.json'))]
+        return [record for _, record in self._records('library/sources/*.json')]
+
+    def _records(self, pattern):
+        for path in sorted(self.root.glob(pattern)):
+            relative = path.relative_to(self.root).as_posix()
+            yield relative, self._read(relative)
 
     def sources(self):
         with locked(self.root):
@@ -149,12 +154,12 @@ class Vault:
         raise ValueError('未知资产 ID 类型: ' + asset_id)
 
     def _get_asset(self, asset_id, revision=None):
+        if revision is not None and (type(revision) is not int or revision < 1):
+            raise ValueError('非法资产版本')
         path = self._asset_path(asset_id)
         current = self._read(path)
         if revision is None or current['revision'] == revision:
             return current
-        if type(revision) is not int or revision < 1:
-            raise ValueError('非法资产版本')
         return self._read(f'history/assets/{asset_id}/{revision}.json')
 
     def get_asset(self, asset_id, revision=None):
@@ -162,7 +167,7 @@ class Vault:
             return self._get_asset(asset_id, revision)
 
     def _assets(self):
-        return [read_json(p) for folder, _ in KINDS.values() for p in sorted((self.root / 'library' / folder).glob('*.json'))]
+        return [record for folder, _ in KINDS.values() for _, record in self._records(f'library/{folder}/*.json')]
 
     def _validate_asset(self, record):
         if record.get('asset_type') not in KINDS or record.get('scope') not in SCOPES:
@@ -348,12 +353,87 @@ class Vault:
 
     def validate(self):
         with locked(self.root):
-            assets = self._assets()
-            for asset in assets:
+            return self._validate_locked()
+
+    def _validate_locked(self):
+        from .graph import graph_path, validate_graph
+
+        def versioned(record):
+            if record.get('schema_version') != 1 or type(record.get('revision')) is not int or record['revision'] < 1:
+                raise ValueError('主档版本无效')
+
+        sources, aliases = list(self._records('library/sources/*.json')), set()
+        for path, source in sources:
+            sid = identifier(source['source_id'])
+            if path != f'library/sources/{sid}.json':
+                raise ValueError('来源身份与路径不一致')
+            names = [sid, *source.get('aliases', [])]
+            if len(set(names)) != len(names) or aliases.intersection(names):
+                raise ValueError('来源身份或别名重复')
+            aliases.update(identifier(name) for name in names)
+            revisions = source['revisions']
+            hashes = [r['revision'] for r in revisions]
+            if len(set(hashes)) != len(hashes) or source['revision'] not in hashes:
+                raise ValueError('来源修订索引无效')
+            for revision in revisions:
+                if not re.fullmatch('[0-9a-f]{64}', revision['revision']):
+                    raise ValueError('来源修订必须是 SHA-256')
+                chapters = revision['chapters']
+                if not chapters or len({c['chapter_id'] for c in chapters}) != len(chapters):
+                    raise ValueError('章节索引缺失或重复')
+                for chapter in chapters:
+                    identifier(chapter['chapter_id'])
+                    if type(chapter['start_line']) is not int or type(chapter['end_line']) is not int or not 1 <= chapter['start_line'] <= chapter['end_line']:
+                        raise ValueError('章节行号无效')
+
+        assets = self._assets()
+        asset_patterns = [f'library/{folder}/*.json' for folder, _ in KINDS.values()] + ['history/assets/*/*.json']
+        for pattern in asset_patterns:
+            for path, asset in self._records(pattern):
+                versioned(asset)
+                aid = identifier(asset['asset_id'])
                 self._validate_asset(copy.deepcopy(asset))
-            projects = [read_json(p) for p in (self.root / 'books').glob('*/project.json')]
-            for project in projects:
-                for ref in project['assets']:
-                    if digest(self._get_asset(ref['asset_id'], ref['revision'])) != ref['hash']:
-                        raise ValueError('项目采用的资产哈希不符')
-            return {'valid': True, 'assets': len(assets), 'sources': len(self._sources()), 'projects': len(projects)}
+                expected = f"history/assets/{aid}/{asset['revision']}.json" if path.startswith('history/') else self._asset_path(aid)
+                if path != expected or not aid.startswith(KINDS[asset['asset_type']][1] + '-'):
+                    raise ValueError('资产身份与路径不一致')
+                if path.startswith('history/') and asset['revision'] >= self._get_asset(aid)['revision']:
+                    raise ValueError('资产历史版本无效')
+
+        projects = list(self._records('books/*/project.json'))
+        for path, project in projects:
+            pid = identifier(project['project_id'])
+            if path != f'books/{pid}/project.json' or project.get('schema_version') != 1 or project['status'] not in {'active', 'archived'}:
+                raise ValueError('项目身份、路径或状态无效')
+            require_text(project['title'], 'project.title', 500)
+            if len({r['asset_id'] for r in project['assets']}) != len(project['assets']):
+                raise ValueError('项目资产引用重复')
+            for ref in project['assets']:
+                if digest(self._get_asset(ref['asset_id'], ref['revision'])) != ref['hash']:
+                    raise ValueError('项目采用的资产哈希不符')
+
+        graphs = 0
+        graph_patterns = ['books/*/outline/plot-graph.json', 'library/sources/*/plot-graph.json', 'history/graphs/*/*.json']
+        for pattern in graph_patterns:
+            for path, graph in self._records(pattern):
+                versioned(graph)
+                gid = identifier(graph['graph_id'])
+                if not gid.startswith('graph-'):
+                    raise ValueError('剧情图 ID 无效')
+                owner = graph['owner']
+                current_path = graph_path(owner['kind'], owner['id'])
+                if owner['kind'] == 'project':
+                    self._project(owner['id'])
+                elif self._source(owner['id'])['source_id'] != owner['id']:
+                    raise ValueError('剧情图 owner 必须为规范来源 ID')
+                historical = path.startswith('history/')
+                expected = f"history/graphs/{gid}/{graph['revision']}.json" if historical else current_path
+                if path != expected:
+                    raise ValueError('剧情图归属与文件路径不一致')
+                if historical:
+                    current = self._read(current_path)
+                    if current['graph_id'] != gid or graph['revision'] >= current['revision']:
+                        raise ValueError('剧情图历史版本无效')
+                else:
+                    graphs += 1
+                validate_graph(graph, self)
+        return {'valid': True, 'assets': len(assets), 'sources': len(sources), 'projects': len(projects), 'graphs': graphs}

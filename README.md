@@ -6,6 +6,25 @@
 
 `distill-novels` 是一个面向 Codex 和兼容 Agent Skills 标准的小说分析 Skill。它支持从多本小说中分别提取有出处的观察，再进行跨书比较和抽象，最终生成可供 AI 写作助手按需加载的原创写作知识库。
 
+## 本地增强版：长期小说资料库
+
+本分支在上游 Skill 基础上增加持久存储和本地工具；上面的链接保留上游出处，不代表此分支已远程发布。
+
+- **长期人物卡与剧情素材**：资料存入独立 `writing-vault`，保留来源、标签、收藏、人工笔记、历史版本；多个作品引用同一张卡的指定版本。
+- **主线树与暗线网络**：卷、篇章、场景构成结构树；伏笔、误导、揭示、回收使用独立关系线，可交叉、多对多，记录读者和人物的认知差异。
+- **Codex / ChatGPT 衔接**：导出带版本基线的工作包，回收修改时检测冲突；支持完整结构资料备份和恢复。
+- **创作积累**：分别存来源研究、可复用机制、原创项目设定，并记录每次采用后的改写与反馈。
+
+先看 [中文使用指南](docs/使用指南.md) 和 [模块验收状态](docs/module-status.md)。Python 3.10+，核心工具无第三方依赖；小说分析由宿主模型完成，脚本本身不会调用模型 API。
+
+```text
+python scripts/demo.py --output work/demo
+python scripts/library.py --vault ../writing-vault init
+python scripts/library.py --vault ../writing-vault status
+```
+
+打开 `work/demo/views/index.html` 体验离线剧情图。演示输出要求空目录，重复演示可改用 `work/demo-2`。真实资料库与示例分开保存。GitHub / Space 实际接入按用户选择留待后续；当前支持文件交接和本地同步基线登记，不会自动写入 ChatGPT 记忆。
+
 ## 为什么使用 Distill Novels？
 
 - **多书蒸馏**：同时处理多本小说，保留独立 `source_id`，避免人物、世界和事件串书。
@@ -55,21 +74,11 @@
 
 支持四种模式：`analyze-only`、`create`、`compare`、`update`；支持三档深度：`compact`、`standard`、`deep`。
 
-## 安装
+## 在本地使用
 
-将本仓库克隆到 Codex skills 目录：
+在当前项目中，让 Codex 读取本仓库的 `SKILL.md` 即可按流程工作。无需先修改全局技能目录。本地工作区的 `AGENTS.md` 已指向工具和私人库。
 
-```bash
-git clone https://github.com/CloudLiu1008/distill-novels.git ~/.codex/skills/distill-novels
-```
-
-也可以使用 Gitee 镜像：
-
-```bash
-git clone https://gitee.com/liu-muyun/distill-novels.git ~/.codex/skills/distill-novels
-```
-
-重启或重新加载 Agent Skills 后，通过 `$distill-novels` 调用。
+如果以后希望在所有项目中通过 `$distill-novels` 调用，可将本增强版目录安装到宿主技能目录，再按宿主方式重新加载。不要用上游主分支覆盖尚未发布的本地增强版。工具代码与 `writing-vault` 始终分开。
 
 ## 本地预处理
 
@@ -79,7 +88,7 @@ git clone https://gitee.com/liu-muyun/distill-novels.git ~/.codex/skills/distill
 python scripts/prepare_sources.py ./books --output ./work/normalized
 ```
 
-每本书都会获得基于内容生成的稳定来源 ID，并记录格式、字数、章节标题和章节识别置信度。
+每本书获得持久来源 ID，内容 SHA-256 单独表示修订，并记录格式、字数、章节标题和章节识别置信度。复用同一输出目录可增量登记；用 `--source-id <已有ID>` 明确添加同一作品的新修订，旧版本不会被覆盖。
 
 ## 生成的知识库
 
@@ -89,6 +98,16 @@ python scripts/prepare_sources.py ./books --output ./work/normalized
 - `synthesis.md`：跨书共同点、差异和新的综合结论
 - `craft-controls.md`：可用于原创写作与润色的参数化控制面板
 - `books/<source-id>/`：每本书独立的概览与章节证据
+
+以上是原有独立报告模式。长期模式的 JSON 主档存放在私人库的 `library/`、`books/`、`history/` 和 `exchanges/`，详细格式见 [持久库工作流](references/library-workflow.md)。两种模式都保留来源证据；报告文件不替代持久主档。
+
+## 开发验证
+
+```text
+python -m unittest discover -s tests -v
+```
+
+可选浏览器验收：安装有 Playwright 的开发环境运行 `node tests/browser_smoke.cjs`，使用本机 Edge 检查已生成演示。产品本身不需要 Node、Playwright 或网络服务。
 
 ## 原创与版权边界
 
