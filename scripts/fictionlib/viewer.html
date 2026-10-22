@@ -2,11 +2,11 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>@@TITLE@@ · 剧情结构</title>
 <style>
-:root{color-scheme:light;--ink:#29312d;--muted:#777c70;--line:#dfdfd2;--accent:#50694c}*{box-sizing:border-box}body{margin:0;background:#f4f3eb;color:var(--ink);font-family:system-ui,"Microsoft YaHei",sans-serif}header{padding:32px 40px 24px;border-bottom:1px solid var(--line);background:#faf9f2}.eyebrow{font-size:11px;letter-spacing:3px;color:var(--accent)}h1{font-family:Georgia,"Songti SC",serif;font-size:30px;margin:12px 0}header p{font-size:13px;color:var(--muted);margin:8px 0}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 40px;border-bottom:1px solid var(--line)}button,select{font:inherit;font-size:13px;padding:9px 13px;border:1px solid #c9cdbd;border-radius:6px;background:#fffef9;color:var(--ink)}button{cursor:pointer}button.active{background:var(--accent);color:white;border-color:var(--accent)}label{font-size:12px;color:var(--muted)}main{display:grid;grid-template-columns:minmax(0,1fr) 310px;min-height:65vh}.stage{padding:20px;overflow:auto;background-image:radial-gradient(#d6d9cc .6px,transparent .6px);background-size:20px 20px}.canvas{min-width:850px;transform-origin:top left}.canvas svg{width:100%;display:block}aside{border-left:1px solid var(--line);padding:28px;background:#faf9f2}aside h2{font-size:18px;margin-top:0}aside p,aside li{font-size:13px;line-height:1.8}pre{font-size:11px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;background:#eeeee4;padding:14px;border-radius:6px}footer{font-size:11px;color:var(--muted);padding:15px 40px;border-top:1px solid var(--line)}.pill{display:inline-block;border:1px solid #c4cbb9;padding:4px 8px;border-radius:4px;font-size:11px;margin-bottom:12px}.legend{font-size:11px;color:var(--muted);margin-left:auto}button:focus-visible,select:focus-visible{outline:2px solid #996b40;outline-offset:3px}@media(max-width:800px){header{padding:24px}.toolbar{padding:14px 24px}main{grid-template-columns:1fr}aside{border-left:0;border-top:1px solid var(--line)}.legend{margin-left:0}}
+:root{color-scheme:light;--ink:#29312d;--muted:#777c70;--line:#dfdfd2;--accent:#50694c}*{box-sizing:border-box}body{margin:0;background:#f4f3eb;color:var(--ink);font-family:system-ui,"Microsoft YaHei",sans-serif}header{padding:32px 40px 24px;border-bottom:1px solid var(--line);background:#faf9f2}.eyebrow{font-size:11px;letter-spacing:3px;color:var(--accent)}h1{font-family:Georgia,"Songti SC",serif;font-size:30px;margin:12px 0}header p{font-size:13px;color:var(--muted);margin:8px 0}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 40px;border-bottom:1px solid var(--line)}button,select{font:inherit;font-size:13px;padding:9px 13px;border:1px solid #c9cdbd;border-radius:6px;background:#fffef9;color:var(--ink)}button{cursor:pointer}button.active{background:var(--accent);color:white;border-color:var(--accent)}label{font-size:12px;color:var(--muted)}main{display:grid;grid-template-columns:minmax(0,1fr) 310px;min-height:65vh}.stage{padding:20px;min-width:0;height:70vh;min-height:360px;overflow:auto;background-image:radial-gradient(#d6d9cc .6px,transparent .6px);background-size:20px 20px}.canvas{transform-origin:top left}.canvas svg{width:100%;height:100%;display:block}#empty-state{padding:24px;color:var(--muted)}aside{border-left:1px solid var(--line);padding:28px;background:#faf9f2}aside h2{font-size:18px;margin-top:0}aside p,aside li{font-size:13px;line-height:1.8}pre{font-size:11px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;background:#eeeee4;padding:14px;border-radius:6px}footer{font-size:11px;color:var(--muted);padding:15px 40px;border-top:1px solid var(--line)}.pill{display:inline-block;border:1px solid #c4cbb9;padding:4px 8px;border-radius:4px;font-size:11px;margin-bottom:12px}.legend{font-size:11px;color:var(--muted);margin-left:auto}button:focus-visible,select:focus-visible{outline:2px solid #996b40;outline-offset:3px}@media(max-width:800px){header{padding:24px}.toolbar{padding:14px 24px}main{grid-template-columns:1fr}aside{border-left:0;border-top:1px solid var(--line)}.legend{margin-left:0}}
 </style></head><body>
 <header><div class="eyebrow">STORY ATLAS / 小说资料库</div><h1>@@TITLE@@</h1><p>主线结构、隐藏联系与信息揭示 · 选择节点查看依据，切换暗线追踪回收。</p></header>
 <div class="toolbar"><button id="tree" class="active">主线树</button><button id="network">关系网络</button><label>剧情线 <select id="thread"><option value="">全部剧情线</option><option value="__none">仅结构</option></select></label><label>分段 <select id="section"><option value="">整部作品</option></select></label><button id="zoom-out" aria-label="缩小">−</button><button id="zoom-in" aria-label="放大">＋</button><span class="legend">实线：结构归属　虚线：因果／暗线关系</span></div>
-<main><div class="stage"><div class="canvas" id="tree-canvas">@@TREE@@</div><div class="canvas" id="network-canvas" hidden>@@NETWORK@@</div></div><aside aria-live="polite"><span class="pill" id="status">剧情结构</span><h2 id="detail-title">从一个节点开始</h2><p id="summary">点击场景查看人物、来源和认知状态。图展示记录的依据，推断与计划不会自动成为事实。</p><pre id="details"></pre></aside></main>
+<main><div class="stage" aria-label="剧情图，可横向和纵向滚动"><p id="empty-state" hidden>当前分段与剧情线没有共同节点，请调整筛选。</p><div class="canvas" id="tree-canvas">@@TREE@@</div><div class="canvas" id="network-canvas" hidden>@@NETWORK@@</div></div><aside aria-live="polite"><span class="pill" id="status">剧情结构</span><h2 id="detail-title">从一个节点开始</h2><p id="summary">点击场景查看人物、来源和认知状态。图展示记录的依据，推断与计划不会自动成为事实。</p><pre id="details"></pre></aside></main>
 <footer id="footer">离线视图 · 完整 JSON 为数据主档</footer>
 <script type="application/json" id="graph-data">@@DATA@@</script>
 <script>
@@ -17,13 +17,74 @@ const thread=document.getElementById('thread'),section=document.getElementById('
 const stateNames={open:'未回收',partial:'部分回收',resolved:'已回收',abandoned:'已放弃',unknown:'未确认'};
 for(const t of graph.threads){const o=document.createElement('option');o.value=t.id;o.textContent=t.title+' · '+(stateNames[t.status]||t.status);thread.append(o)}
 for(const n of graph.nodes.filter(n=>['volume','arc'].includes(n.kind))){const o=document.createElement('option');o.value=n.id;o.textContent=n.title;section.append(o)}
-let zoom=1;
+let zoom=1,mode='tree';
+const stage=document.querySelector('.stage');
+const canvases=[...document.querySelectorAll('.canvas')];
+const layouts=new Map();
 function show(node){document.getElementById('detail-title').textContent=node.title;document.getElementById('status').textContent=node.kind+' / '+node.claim_kind;document.getElementById('summary').textContent=node.summary||'此节点暂无概述；查看下方记录。';document.getElementById('details').textContent=JSON.stringify(node,null,2)}
 document.querySelectorAll('[data-node]').forEach(el=>{el.addEventListener('click',()=>show(byId.get(el.dataset.node)));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show(byId.get(el.dataset.node))}})});
-function filter(){const selected=graph.threads.find(t=>t.id===thread.value);const visible=new Set();for(const n of graph.nodes){let p=n;while(p){if(!section.value||p.id===section.value){visible.add(n.id);break}p=byId.get(p.parent_id)}}document.querySelectorAll('[data-node]').forEach(el=>{el.style.display=visible.has(el.dataset.node)?'':'none';el.style.opacity=selected&&!selected.node_ids.includes(el.dataset.node)?'.3':'1'});document.querySelectorAll('.relation,.structure').forEach(el=>{const inSection=visible.has(el.dataset.from)&&visible.has(el.dataset.to);const inThread=!el.classList.contains('relation')||(!thread.value||(thread.value!=='__none'&&el.dataset.threads.split(' ').includes(thread.value)));el.style.display=inSection&&inThread?'':'none'});if(selected){document.getElementById('detail-title').textContent=selected.title;document.getElementById('status').textContent=stateNames[selected.status]||selected.status;document.getElementById('summary').textContent=selected.resolution_note||'选择相关节点查看铺垫、推进与回收依据。';document.getElementById('details').textContent=JSON.stringify(selected,null,2)}}
+function layout(canvas,nodes){
+  const pos=new Map(),network=canvas.id==='network-canvas';
+  let width=320,height=180;
+  if(network&&nodes.length){
+    const radius=Math.max(260,nodes.length*42),center=radius+220;
+    width=height=center*2;
+    nodes.forEach((n,i)=>pos.set(n.id,[center+radius*Math.cos(2*Math.PI*i/nodes.length),center+radius*Math.sin(2*Math.PI*i/nodes.length)]));
+  }else if(nodes.length){
+    const ids=new Set(nodes.map(n=>n.id)),levels=new Map();
+    for(const n of nodes){let depth=0,p=byId.get(n.parent_id);while(p&&ids.has(p.id)){depth++;p=byId.get(p.parent_id)}if(!levels.has(depth))levels.set(depth,[]);levels.get(depth).push(n)}
+    width=Math.max(320,...[...levels.values()].map(group=>group.length*240+60));
+    for(const [depth,group] of [...levels].sort((a,b)=>a[0]-b[0])){
+      group.sort((a,b)=>(pos.get(a.parent_id)?.[0]||0)-(pos.get(b.parent_id)?.[0]||0)||(a.narrative_order||0)-(b.narrative_order||0));
+      group.forEach((n,i)=>pos.set(n.id,[(i+.5)*width/group.length,90+depth*170]));
+    }
+    height=180+Math.max(...levels.keys())*170;
+  }
+  const svg=canvas.querySelector('svg');
+  svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+  for(const el of svg.querySelectorAll('[data-node]')){
+    const point=pos.get(el.dataset.node);el.style.display=point?'':'none';
+    if(!point)continue;
+    const [x,y]=point,rect=el.querySelector('rect'),texts=el.querySelectorAll('text');
+    rect.setAttribute('x',x-104);rect.setAttribute('y',y-32);
+    texts.forEach((text,i)=>{text.setAttribute('x',x);text.setAttribute('y',y+(i?20:-1))});
+  }
+  svg.querySelectorAll('.structure,.relation').forEach((el,index)=>{
+    const a=pos.get(el.dataset.from),b=pos.get(el.dataset.to);
+    const relation=el.classList.contains('relation');
+    const inThread=!relation||!thread.value||(thread.value!=='__none'&&el.dataset.threads.split(' ').includes(thread.value));
+    el.style.display=a&&b&&inThread?'':'none';
+    if(!a||!b||!inThread)return;
+    const [x1,y1]=a,[x2,y2]=b;
+    if(!relation){el.setAttribute('d',`M${x1},${y1+32} C${x1},${y1+85} ${x2},${y2-85} ${x2},${y2-32}`);return}
+    const midx=(x1+x2)/2,midy=Math.min(y1,y2)-55-(index%4)*22;
+    el.querySelector('path').setAttribute('d',`M${x1},${y1-28} Q${midx},${midy-65} ${x2},${y2-28}`);
+    const text=el.querySelector('text');text.setAttribute('x',midx);text.setAttribute('y',midy);
+  });
+  layouts.set(canvas,{width,height,first:pos.values().next().value});
+}
+function resizeCanvases(){for(const canvas of canvases){const size=layouts.get(canvas);canvas.style.width=(size.width*zoom)+'px';canvas.style.height=(size.height*zoom)+'px'}}
+function focusGraph(){
+  const canvas=document.getElementById(mode+'-canvas'),first=layouts.get(canvas).first;
+  document.getElementById('empty-state').hidden=!!first;
+  stage.scrollLeft=first?Math.max(0,first[0]*zoom-stage.clientWidth/2+20):0;
+  stage.scrollTop=first?Math.max(0,first[1]*zoom-stage.clientHeight/2+20):0;
+}
+function filter(){
+  const selected=graph.threads.find(t=>t.id===thread.value),inSection=new Set();
+  for(const n of graph.nodes){let p=n;while(p){if(!section.value||p.id===section.value){inSection.add(n.id);break}p=byId.get(p.parent_id)}}
+  const visible=new Set([...inSection].filter(id=>!selected||selected.node_ids.includes(id)));
+  const treeVisible=new Set(visible);
+  // 主线树保留筛选范围内的结构父节点；网络只显示真正选中的成员。
+  for(const id of visible){let p=byId.get(byId.get(id).parent_id);while(p&&inSection.has(p.id)){treeVisible.add(p.id);p=byId.get(p.parent_id)}}
+  for(const canvas of canvases)layout(canvas,graph.nodes.filter(n=>(canvas.id==='tree-canvas'?treeVisible:visible).has(n.id)));
+  resizeCanvases();focusGraph();
+  if(selected){document.getElementById('detail-title').textContent=selected.title;document.getElementById('status').textContent=stateNames[selected.status]||selected.status;document.getElementById('summary').textContent=selected.resolution_note||'选择相关节点查看铺垫、推进与回收依据。';document.getElementById('details').textContent=JSON.stringify(selected,null,2)}
+}
 thread.addEventListener('change',filter);section.addEventListener('change',filter);
-for(const mode of ['tree','network']){document.getElementById(mode).addEventListener('click',()=>{for(const other of ['tree','network']){document.getElementById(other+'-canvas').hidden=other!==mode;document.getElementById(other).classList.toggle('active',other===mode)}})}
-function setZoom(delta){zoom=Math.max(.5,Math.min(3,zoom+delta));document.querySelectorAll('.canvas').forEach(el=>{el.style.width=(zoom*100)+'%'})}
+for(const name of ['tree','network']){document.getElementById(name).addEventListener('click',()=>{mode=name;for(const other of ['tree','network']){document.getElementById(other+'-canvas').hidden=other!==mode;document.getElementById(other).classList.toggle('active',other===mode)}focusGraph()})}
+function setZoom(delta){const old=zoom;zoom=Math.max(.5,Math.min(3,zoom+delta));const x=(stage.scrollLeft+stage.clientWidth/2)/old,y=(stage.scrollTop+stage.clientHeight/2)/old;resizeCanvases();stage.scrollLeft=x*zoom-stage.clientWidth/2;stage.scrollTop=y*zoom-stage.clientHeight/2}
 document.getElementById('zoom-in').addEventListener('click',()=>setZoom(.25));document.getElementById('zoom-out').addEventListener('click',()=>setZoom(-.25));
 document.getElementById('footer').textContent='离线视图 · '+(graph.graph_id||'未保存图')+' · v'+(graph.revision||'草稿')+' · 完整 JSON 为数据主档';
+filter();
 </script></body></html>

@@ -26,8 +26,11 @@ const { chromium } = require(process.argv[2] || 'playwright');
     assert.equal(await page.locator('#network-canvas [data-node="reveal"]').isVisible(), false);
     assert.equal(await page.locator('#network-canvas [data-node="letter"]').isVisible(), true);
     await page.locator('#section').selectOption('');
+    const renderedFont = () => page.locator('#network-canvas [data-node="letter"] text').first().evaluate(el =>
+      parseFloat(getComputedStyle(el).fontSize) * el.getScreenCTM().a);
+    const beforeZoom = await renderedFont();
     await page.locator('#zoom-in').click();
-    assert.equal(await page.locator('#network-canvas').evaluate(el => el.style.width), '125%');
+    assert(Math.abs(await renderedFont() / beforeZoom - 1.25) < .01);
     await page.locator('#zoom-out').click();
     await page.screenshot({ path: path.join(output, 'network-preview.png'), fullPage: true });
     await page.locator('#tree').click();
