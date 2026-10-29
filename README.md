@@ -8,7 +8,7 @@
 
 ## 本地增强版：长期小说资料库
 
-本分支在上游 Skill 基础上增加持久存储和本地工具；上面的链接保留上游出处。本增强版保存于私有仓库 [medillali/distill-novels](https://github.com/medillali/distill-novels)，个人资料独立保存于 [medillali/writing-vault](https://github.com/medillali/writing-vault)。
+本分支在上游 Skill 基础上增加持久存储和本地工具；上面的链接保留上游出处。本增强版保存于公开仓库 [medillali/distill-novels](https://github.com/medillali/distill-novels)，个人资料独立保存于 [medillali/writing-vault](https://github.com/medillali/writing-vault)。
 
 - **长期人物卡与剧情素材**：资料存入独立 `writing-vault`，保留来源、标签、收藏、人工笔记、历史版本；多个作品引用同一张卡的指定版本。
 - **主线树与暗线网络**：卷、篇章、场景构成结构树；伏笔、误导、揭示、回收使用独立关系线，可交叉、多对多，记录读者和人物的认知差异。
@@ -23,7 +23,11 @@ python scripts/library.py --vault ../writing-vault init
 python scripts/library.py --vault ../writing-vault status
 ```
 
-打开 `work/demo/views/index.html` 体验离线剧情图。演示输出要求空目录，重复演示可改用 `work/demo-2`。真实资料库与示例分开保存。GitHub私有保存已通过远程克隆和恢复验证，见 [GitHub与换机恢复](docs/GitHub与换机恢复.md)。Space仍待后续；当前支持文件交接和本地同步基线登记，不会自动写入 ChatGPT 记忆。
+打开 `work/demo/views/index.html` 体验离线剧情图。演示输出要求空目录，重复演示可改用 `work/demo-2`。真实资料库与示例分开保存。GitHub保存已通过既有远程克隆和恢复验证，见 [GitHub与换机恢复](docs/GitHub与换机恢复.md)。Space仍待后续；当前支持文件交接和本地同步基线登记，不会自动写入 ChatGPT 记忆。
+
+## 本项目跨端续接
+
+研究资料与当前任务见 [writing-vault/COLLABORATION.md](https://github.com/medillali/writing-vault/blob/main/COLLABORATION.md)、[当前状态](https://github.com/medillali/writing-vault/blob/main/project/CURRENT-STATE.md) 和 [可复制续接提示](https://github.com/medillali/writing-vault/blob/main/project/CROSS-END-PROMPT.md)。两库克隆到同一父目录后可直接使用。外层创作框架、工作台与执行资料保存在资料库project/，不是工具演示数据。
 
 ## 为什么使用 Distill Novels？
 

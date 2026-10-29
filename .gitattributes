@@ -1,0 +1,5 @@
+# 保留文件字节，避免跨端换行转换破坏证据或交接清单哈希
+* -text
+*.png binary
+*.jpg binary
+*.zip binary

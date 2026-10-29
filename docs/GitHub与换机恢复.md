@@ -1,5 +1,8 @@
 # GitHub 保存与换机恢复
 
+> 2026-10-30协作更新：两库均已公开；当前研究范围、跨端续接和本次同步回执以[资料库协作入口](https://github.com/medillali/writing-vault/blob/main/COLLABORATION.md)为准。下文早期私有仓库与开篇研究说明保留当时验收语境。
+
+
 工具代码和私人创作资料使用独立仓库。小说原文不随资料库推送；源文件需另行保存。完整来源索引、研究卡、图、检查点和历史仍可从Git取回，无原文也能读取已完成的分析。
 
 - 工具：[medillali/distill-novels](https://github.com/medillali/distill-novels)，私有。
